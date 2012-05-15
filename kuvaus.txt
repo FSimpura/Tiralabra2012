@@ -1,0 +1,9 @@
+Dokumentaatio - M‰‰rittelydokumentti, kuvaus
+
+Teko‰ly "n:n suoraan" etsii m‰‰riteltyyn syvyyteen asti nelj‰n, viiden, jne. suoran yleistyksen ratkaisua minimax-algoritmin syvyyssuuntaisella l‰pik‰ynnill‰. Teko‰lyn "‰lykkyys" (vaikeustaso) m‰‰r‰ytyy haun halutun maksimisyvyyden kautta.
+
+Ohjelman teko‰ly l‰pik‰y x * y -matriisiin kuvatun pelilaudan maksimissaan x haaraa tavoitesyvyyteen asti. Algoritmi laskee lyhyimm‰n reitin voittavaan siirtoon jokaisella vuorallaan pelitilanteen p‰ivittyess‰. Maksimisyvyydess‰‰n algoritmi joutuu k‰ym‰‰n l‰pi puolet pelilaudan kokonaissiirroista, eli vapaasta tilasta laudalla.
+
+Algoritmin aikavaativuus on siis eksponentiaalinen O(x^n), haaroista x syvyyteen n asti. Tilavaativuus on lineaarinen O(n) suhteessa pelilaudan kokoon.
+
+Ohjelma toteutetaan Pythonilla, jonka valmiiksi toteutetuista osista k‰ytet‰‰n mahdollisesti Random-luokkaa ja testik‰yttˆisen GUI:n luomiseksi tkinteri‰.
