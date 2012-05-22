@@ -1,16 +1,57 @@
 #   Artificial intelligence for "connect n"
-#   Written by Frans Simpura 
+#   Written by Frans Simpura
+
+import sys
 
 # TODO: The AI
+
 class cnai:
-	
+
     def _init__(self, skillLevel):
         self.skillLevel = skillLevel
-		
-    # TODO: Calculates the best move according to the skillLevel using minimax algorithm	
-    def makeMove(self, token, board):
-        pass
+    
+    # Sums up all the heuristics of given move
+    def moveTotalValue(self, move, board):
+        return diagonalValue(move, board) + horizontalValue(move, board) + verticalValue(move, board) 
 
+    # TODO: Calculates the diagonal heuristics of given move
+    def diagonalValue(self, move, board):
+        pass
+        
+    # TODO: Calculates the horizontal heuristics of given move
+    def horizontalValue(self, move, board):
+        pass
+        
+    # TODO: Calculates the vertical heuristics of given move   
+    def verticalValue(self, move, board):
+        pass
+	
+    # TODO: Calculates the best move according to the skillLevel using minimax algorithm	
+    def minimax(self, move, depth): 
+        if self.isWinningMove(move.x, move.y):
+            return sys.maxint
+
+        if depth == 0:
+            # TODO: "return the heuristic value of the current move"
+            pass
+
+        alpha = sys.maxint
+
+        enemyMoves = [] # TODO: generate a list of the possible moves
+        
+        for move in enemyMoves:
+            alpha = min(alpha, -(self.minimax(move, depth-1)))
+
+        return alpha
+        
+# A wrap for the coordinates and the token of a move        
+class Move:
+    
+    def __init__(self, x, y, token):
+        self.x = x
+        self.y = y
+        self.token = token
+       
 # A coordinate pair (x, y)
 class Coords:
 
@@ -31,7 +72,7 @@ class Coords:
 	
 # A representation of a board of size x*y
 class Board:
-
+    # TODO: use Move instead of coordinates and tokens
     # Initialize an empty board of given size x*y
     def __init__(self, columns, rows):
         self.width = columns
