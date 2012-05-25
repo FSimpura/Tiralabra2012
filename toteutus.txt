@@ -1,0 +1,21 @@
+Toteutusdokumentti:
+
+cnai-luokka:
+
+cnai laskee parhaan mahdollisen siirron ottaen huomioon nykyisen  pelitilanteen sekä tulevat siirrot haluttuun syvyyteen asti käyttäen sisäistä heuristiikkaa siirron arvon määrittelyyn. 
+
+Siirron heuristiikka (http://www.cs.purdue.edu/homes/cs190m/fall08/projects/project4/#ai) perustuu yhden siirron kaikkien mahdollisten voittotilanteiden laskemiseen. Algoritmi etenee vaaka-, pysty- ja vinosuunnissa etsien kaikki voittoon kykenevät sarjat ja summaa niiden sisältä löytyvien pelimerkkien lukumääriin perustuvat painotetut arvot yhteen.
+
+Heuristista arvoa käytetään luokan minimax-funktioon, joka pyrkii maksimoimaan voiton vastustajaan nähden.
+
+TODO ...
+
+Board-luokka:
+
+Board on kaksiulotteinen listaesitys pelilaudalle, jonka kautta laskenta tapahtuu. Pelilaudan koko määritellään lautaa luodessa ja voittorivin pituus on myös lautakohtainen.
+
+TODO ...
+
+Move-luokka:
+
+Move-luokan olio sisältää tiedon koordinaateista ja pelimerkistä. Siirrot tapahtuvat näiden olioiden kautta syötteinä Board-olioon.
