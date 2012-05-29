@@ -1,7 +1,7 @@
 #   Artificial intelligence for "connect n"
 #   Written by Frans Simpura
 
-import sys
+import sys, copy
 
 # TODO: The AI
 
@@ -9,7 +9,7 @@ class cnai:
 
     def __init__(self, skillLevel):
         self.skillLevel = skillLevel
-
+        
     def tokenCountWeighted(self, n):
         if n == 0:
             return 0
@@ -23,7 +23,7 @@ class cnai:
     def incDiagonalValue(self, move, board):
         heuristics = 0
         tokenCount = 0
-        for offset in range(-board.toWin+1, board.toWin): # Define the offset according to the win condition
+        for offset in range(-board.toWin+1, 1): # Define the offset according to the win condition
             for step in range(board.toWin):
                 if not board.inBounds(move.x + offset + step, move.y + offset + step):
  
@@ -41,7 +41,7 @@ class cnai:
     def decDiagonalValue(self, move, board):
         heuristics = 0
         tokenCount = 0
-        for offset in range(-board.toWin+1, board.toWin): # Define the offset according to the win condition
+        for offset in range(-board.toWin+1, 1): # Define the offset according to the win condition
             for step in range(board.toWin):
                 if not board.inBounds(move.x - offset - step, move.y + offset + step):
                     tokenCount = 0
@@ -53,12 +53,13 @@ class cnai:
                     break
             heuristics += self.tokenCountWeighted(tokenCount)
             tokenCount = 0
-        return heuristics  
+        return heuristics
+        
     # Calculates the vertical heuristics of given move
     def verticalValue(self, move, board):
         heuristics = 0
         tokenCount = 0
-        for offset in range(-board.toWin+1, board.toWin): # Define the offset according to the win condition
+        for offset in range(-board.toWin+1, 1): # Define the offset according to the win condition
             for step in range(board.toWin):
                 if not board.inBounds(move.x + offset + step, move.y):
                     break # Out-of-bounds; winning condition will not be met
@@ -73,36 +74,59 @@ class cnai:
         
     # Calculates the horizontal heuristics of given move   
     def horizontalValue(self, move, board):
-        heuristics = 0
-        tokenCount = 0
-        for offset in range(-board.toWin+1, board.toWin): # Define the offset according to the win condition
+        heuristics = tokenCount = 0
+        for offset in range(-board.toWin+1, 1): # Define the offset according to the win condition
             for step in range(board.toWin):
                 if not board.inBounds(move.x, move.y + offset + step):
                     tokenCount = 0
                     break # Out-of-bounds; winning condition will not be met
                 if board.getBoard()[move.x][move.y + offset + step] == move.token:
-                   tokenCount += 1
+                    tokenCount += 1
                 elif board.getBoard()[move.x][move.y + offset + step] != None:
                     tokenCount = 0
+                    doLeft = False
                     break
             heuristics += self.tokenCountWeighted(tokenCount)
             tokenCount = 0
         return heuristics
 	
-    # TODO: Calculates the best move according to the skillLevel using minimax algorithm	
-    def minimax(self, move, depth, board): 
-        if self.isWinningMove(move.x, move.y):
+    # Determines the best move according to the heuristics of the possible moves
+    def bestMove(self, token, depth, board):
+        best = -100000
+        bestMove = None
+        for n in range(board.width): # generate a list of the possible moves
+            newMove = board.dropToken(token, n, True)
+            if newMove != None:
+                latest = self.minimax(newMove, depth, copy.deepcopy(board))
+                if latest > best:
+                    best = latest
+                    bestMove = newMove
+        return bestMove.y
+    
+    # Calculates the best move according to the skillLevel using minimax algorithm	
+    def minimax(self, move, depth, board):
+        board.dropToken(move.token, move.y)
+        if board.isWinningMove(move):
             return sys.maxint
 
         if depth == 0:
             return self.moveTotalValue(move, board)
 
         alpha = sys.maxint
-
-        enemyMoves = [] # TODO: generate a list of the possible moves
-        
-        for move in enemyMoves:
-            alpha = min(alpha, -(self.minimax(move, depth-1)))
+        enemyToken = None
+        enemyMoves = []
+        if move.token == "X":
+            enemyToken = "O"
+        else:
+            enemyToken = "X"  
+        for n in range(board.width): # generate a list of the possible enemy moves
+            newMove = board.dropToken(enemyToken, n, True)
+            #print newMove
+            if newMove != None:
+                enemyMoves.append(newMove)
+        #print enemyMoves
+        for enemyMove in enemyMoves:
+            alpha = min(alpha, -(self.minimax(enemyMove, depth-1, copy.deepcopy(board))))
 
         return alpha
         
@@ -113,6 +137,9 @@ class Move:
         self.x = x
         self.y = y
         self.token = token
+      
+    def __repr__(self):
+        return "[(" + str(self.x) + ", " + str(self.y)+ "), " + str(self.token) + "]"
        
 # A coordinate pair (x, y)
 class Coords:
@@ -143,25 +170,30 @@ class Board:
         self.LAST_ROW = rows-1
         self.board = [[None for i in range(self.width)] for j in range(self.height)]
         self.toWin = 4 # Tokens in a row required for winning
+        self.playerToken = "O"
+        self.enemyToken = "X"
 	
     # Return the reference of the board
     def getBoard(self):
         return self.board
 		
     # Places the given token at the bottommost free row of the given column. Return True if succees, otherwise False.
-    def dropToken(self, token, column):
+    def dropToken(self, token, column, test = False):
         if self.inBounds(0, column):
             for row in range(len(self.board)):
                 if self.board[row][column] == None:
-                    self.board[row][column] = token
-                    return Coords(row, column)
+                    if not test:
+                        self.board[row][column] = token
+                    return Move(row, column, token)
         return None
 	
     # Returns True if a given token at given coordinates forms a winning row vertically, horizontally or diagonally, otherwise False
-    def isWinningMove(self, x, y):
+    def isWinningMove(self, move):
         coords = [Coords(1, 0), Coords(0, 1), Coords(1, 1), Coords(1, -1)]
         i = 0
-        token = self.getToken(x, y)
+        x = move.x
+        y = move.y
+        token = move.token
         while i <= 3:
             doLeft = doRight = True
             rowCounter = 1
@@ -211,3 +243,4 @@ def printAsBoard(board):
                 print(cell),
         print("")
     print("")
+
