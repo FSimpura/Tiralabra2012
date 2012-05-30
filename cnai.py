@@ -2,9 +2,6 @@
 #   Written by Frans Simpura
 
 import sys, copy
-from Tkinter import *
-import Image
-import ImageTk
 
 # TODO: The AI
 
@@ -12,7 +9,8 @@ class cnai:
 
     def __init__(self, skillLevel):
         self.skillLevel = skillLevel
-        
+    
+    # Calculates the final value for the heuristics
     def tokenCountWeighted(self, n):
         if n == 0:
             return 0
