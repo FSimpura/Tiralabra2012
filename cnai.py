@@ -2,6 +2,9 @@
 #   Written by Frans Simpura
 
 import sys, copy
+from Tkinter import *
+import Image
+import ImageTk
 
 # TODO: The AI
 
@@ -92,12 +95,14 @@ class cnai:
 	
     # Determines the best move according to the heuristics of the possible moves
     def bestMove(self, token, depth, board):
-        best = -100000
+        best = -sys.maxint - 1
         bestMove = None
         for n in range(board.width): # generate a list of the possible moves
             newMove = board.dropToken(token, n, True)
             if newMove != None:
                 latest = self.minimax(newMove, depth, copy.deepcopy(board))
+                if board.isWinningMove(newMove):
+                    return newMove.y
                 if latest > best:
                     best = latest
                     bestMove = newMove
@@ -163,20 +168,23 @@ class Coords:
 class Board:
     # TODO: use Move instead of coordinates and tokens
     # Initialize an empty board of given size x*y
-    def __init__(self, columns, rows):
+    def __init__(self, columns, rows, toWin):
         self.width = columns
         self.height = rows
         self.LAST_COLUMN = columns-1
         self.LAST_ROW = rows-1
         self.board = [[None for i in range(self.width)] for j in range(self.height)]
-        self.toWin = 4 # Tokens in a row required for winning
+        self.toWin = toWin # Tokens in a row required for winning
         self.playerToken = "O"
         self.enemyToken = "X"
+        self.tokenCount = 0
 	
     # Return the reference of the board
     def getBoard(self):
         return self.board
-		
+    def isFull(self):
+        return self.tokenCount == (self.width * self.height)
+    
     # Places the given token at the bottommost free row of the given column. Return True if succees, otherwise False.
     def dropToken(self, token, column, test = False):
         if self.inBounds(0, column):
@@ -184,9 +192,13 @@ class Board:
                 if self.board[row][column] == None:
                     if not test:
                         self.board[row][column] = token
+                        self.tokenCount += 1
                     return Move(row, column, token)
         return None
 	
+    def isFullColumn(self, c):
+        return self.board[self.LAST_ROW][c] != None
+    
     # Returns True if a given token at given coordinates forms a winning row vertically, horizontally or diagonally, otherwise False
     def isWinningMove(self, move):
         coords = [Coords(1, 0), Coords(0, 1), Coords(1, 1), Coords(1, -1)]
@@ -217,10 +229,10 @@ class Board:
 	
     # Calls dropToken and checks if that move wins 
     def dropAndCheck(self, token, column):
-        coords = self.dropToken(token, column)
-        if isinstance(coords, Coords):
-            return self.isWinningMove(coords.x, coords.y)
-        return False		
+        move = self.dropToken(token, column)
+        if isinstance(move, Move):
+            return self.isWinningMove(move)
+        return False	
 		
     # Returns True if given coordinates are within the board, otherwise False.
     def inBounds(self, x, y):
@@ -244,3 +256,47 @@ def printAsBoard(board):
         print("")
     print("")
 
+def playAgainstAI(n):
+    if n < board.width:
+        if not board.isFullColumn(n):
+            if board.dropAndCheck("X", n):
+                return 1
+            if board.dropAndCheck("O", ai.bestMove("O", ai.skillLevel, board)):
+                return 2
+    return 0
+
+#app = GUI(None, board, ai)       
+#app.gameloop()
+
+def main():
+        while True:
+            c = raw_input("> ")
+            try:
+                w = playAgainstAI(int(c))
+                printAsBoard(board)
+                if w == 1:
+                    print "X wins!"
+                    break
+                if w == 2:
+                    print "O wins!"
+                    break
+
+                if board.isFull():
+                    print "Draw!"
+            except ValueError:
+                pass
+if (len(sys.argv) > 4):
+    d = int(sys.argv[1])
+    w = int(sys.argv[2])
+    h = int(sys.argv[3])
+    toWin = int(sys.argv[4])
+    board = Board(w, h, toWin)
+    ai = cnai(d)
+    printAsBoard(board)
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\n Interrupted!")
+        sys.exit()   
+
+             
