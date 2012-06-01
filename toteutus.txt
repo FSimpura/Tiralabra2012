@@ -1,21 +1,44 @@
 Toteutusdokumentti:
 
-cnai-luokka:
 
-cnai laskee parhaan mahdollisen siirron ottaen huomioon nykyisen  pelitilanteen sekä tulevat siirrot haluttuun syvyyteen asti käyttäen sisäistä heuristiikkaa siirron arvon määrittelyyn. 
+* cnai-luokka:
 
-Siirron heuristiikka (http://www.cs.purdue.edu/homes/cs190m/fall08/projects/project4/#ai) perustuu yhden siirron kaikkien mahdollisten voittotilanteiden laskemiseen. Algoritmi etenee vaaka-, pysty- ja vinosuunnissa etsien kaikki voittoon kykenevät sarjat ja summaa niiden sisältä löytyvien pelimerkkien lukumääriin perustuvat painotetut arvot yhteen.
+cnai laskee parhaan mahdollisen siirron minimax-algoritmilla ottaen huomioon nykyisen pelitilanteen sekä tulevat siirrot haluttuun syvyyteen asti käyttäen sisäistä heuristiikkaa siirron arvon määrittelyyn.
 
-Heuristista arvoa käytetään luokan minimax-funktioon, joka pyrkii maksimoimaan voiton vastustajaan nähden.
+Heuristiikka ja minimax-algoritmi perustuvat malleihin: http://www.cs.purdue.edu/homes/cs190m/fall08/projects/project4/#ai
 
-TODO ...
+Siirron heuristiikka, moveTotalValue():
 
-Board-luokka:
+Siirron arvo muihin siirtoihin nähden perustuu yhden siirron kaikkien mahdollisten voittotilanteiden laskemiseen. Algoritmi etenee vaaka-, pysty- ja vinosuunnissa etsien kaikki voittoon kykenevät sarjat ja summaa niiden sisältä löytyvien pelimerkkien lukumääriin perustuvat painotetut arvot yhteen.
+
+Painottava kaava on muotoa pow(2, (n-1)*2), missä n on pelimerkkien määrä etsityllä rivillä. Jokainen voittosuunta lasketaan erillisellä algoritmilla.
+
+Heuristiikka toimii polynomisessa aikavaativuudessa O(n^2) etsiessään n-pituisia voittorivejä limittäin voittorivin pituudelta. Tilavaativuus tälle läpikäynnille, jossa tilaa varataan laskurin arvolle, on vakio O(1).
+
+minimax():
+
+Minimax-algoritmi etsii rekursiivisesti parasta mahdollista pelitilannetta annettuun syvyyteen asti olettaen että vastapelaaja pelaa siirtonsa hyvin. Algoritmi palauttaa siirrolle laskemansa arvon, joka on suurimmillaan, mikäli siirto johtaa algoritmin kutsuvan pelaajan voittoon ja pienimmillään, mikäli siirto johtaa vastustajan voittoon. Jos voittoriviä ei löydy, palautetaan siirron paras mahdollinen arvo heuristiikkaa käyttäen.
+
+Minimax käy pelipuuta haluttuun syvyyteen asti kaikkien mahdollisten siirtojen kautta, joten aikavaativuus on O(n^s), missä n on mahdollisten siirtojen määrä (kutsumisvuorolla, maksimissaan laudan leveys) ja s syvyys, johon laskenta jatkuu. Jos voittava siirto löytyy kesken haun, ei koko puuta käydä läpi. Myös tilavaativuus on O(n^s) algoritmin luodessa pelilaudasta uuden kopion jokaista haaraumaa kohti.
+
+bestMove():
+
+Lopullinen parhaaksi katsottu siirto pelitilanteessa palautetaan Move-oliona muodossa ((y, x), pelimerkki), jossa koordinaatti (y, x) kertoo parhaan laillisen siirron laudalla.
+
+
+* Board-luokka:
 
 Board on kaksiulotteinen listaesitys pelilaudalle, jonka kautta laskenta tapahtuu. Pelilaudan koko määritellään lautaa luodessa ja voittorivin pituus on myös lautakohtainen.
 
-TODO ...
+Laudan tyhjiä alkioita merkitään Nonella, pelaajaa X merkillä 'X' ja pelaajaa O merkillä 'O'.
 
-Move-luokka:
+
+* Move-luokka:
 
 Move-luokan olio sisältää tiedon koordinaateista ja pelimerkistä. Siirrot tapahtuvat näiden olioiden kautta syötteinä Board-olioon.
+
+
+* Parannusehdotuksia:
+
+Minimax-algoritmia saisi nopeutettua käyttämällä alfa-beta-pruunausta turhien haaraumatarkistusten eliminointiin. Tekoäly voisi myös oppia virheistään välttämällä huonoiksi kokemiansa siirtoja.
+

@@ -1,14 +1,15 @@
 #   Artificial intelligence for "connect n"
 #   Written by Frans Simpura
 
-import sys, copy
+import sys
 
-# TODO: The AI
+# The AI for "connect n"
 
 class cnai:
 
+    # Initialize the AI with target depth
     def __init__(self, skillLevel):
-        self.skillLevel = skillLevel
+        self.skillLevel = max (skillLevel, 0)
     
     # Calculates the final value for the heuristics
     def tokenCountWeighted(self, n):
@@ -27,7 +28,6 @@ class cnai:
         for offset in range(-board.toWin+1, 1): # Define the offset according to the win condition
             for step in range(board.toWin):
                 if not board.inBounds(move.x + offset + step, move.y + offset + step):
- 
                     tokenCount = 0
                     break # Out-of-bounds; winning condition will not be met
                 if board.getBoard()[move.x + offset + step][move.y + offset + step] == move.token:
@@ -39,6 +39,7 @@ class cnai:
             tokenCount = 0
         return heuristics
         
+    # Calculates the diagonal (decreasing) heuristics of given move
     def decDiagonalValue(self, move, board):
         heuristics = 0
         tokenCount = 0
@@ -85,26 +86,26 @@ class cnai:
                     tokenCount += 1
                 elif board.getBoard()[move.x][move.y + offset + step] != None:
                     tokenCount = 0
-                    doLeft = False
                     break
             heuristics += self.tokenCountWeighted(tokenCount)
             tokenCount = 0
         return heuristics
 	
     # Determines the best move according to the heuristics of the possible moves
-    def bestMove(self, token, depth, board):
+    def bestMove(self, token, board):
+        depth = self.skillLevel
         best = -sys.maxint - 1
         bestMove = None
         for n in range(board.width): # generate a list of the possible moves
             newMove = board.dropToken(token, n, True)
             if newMove != None:
-                latest = self.minimax(newMove, depth, copy.deepcopy(board))
+                latest = self.minimax(newMove, depth, board.copyBoard())
                 if board.isWinningMove(newMove):
-                    return newMove.y
+                    return newMove
                 if latest > best:
                     best = latest
                     bestMove = newMove
-        return bestMove.y
+        return bestMove
     
     # Calculates the best move according to the skillLevel using minimax algorithm	
     def minimax(self, move, depth, board):
@@ -122,14 +123,12 @@ class cnai:
             enemyToken = "O"
         else:
             enemyToken = "X"  
-        for n in range(board.width): # generate a list of the possible enemy moves
+        for n in range(board.width): # generate a list of all the possible enemy moves
             newMove = board.dropToken(enemyToken, n, True)
-            #print newMove
             if newMove != None:
                 enemyMoves.append(newMove)
-        #print enemyMoves
         for enemyMove in enemyMoves:
-            alpha = min(alpha, -(self.minimax(enemyMove, depth-1, copy.deepcopy(board))))
+            alpha = min(alpha, -(self.minimax(enemyMove, depth-1, board.copyBoard())))
 
         return alpha
         
@@ -140,7 +139,8 @@ class Move:
         self.x = x
         self.y = y
         self.token = token
-      
+    
+    # Return x, y and token information for debugging
     def __repr__(self):
         return "[(" + str(self.x) + ", " + str(self.y)+ "), " + str(self.token) + "]"
        
@@ -151,7 +151,8 @@ class Coords:
         self.x = x
         self.y = y
 		
-	# Increases positive coordinates and decreases negative coordinates by one; passes on zeroes.	
+	# Increases positive coordinates and decreases negative coordinates by one; passes on zeroes.
+    # Used in the row checkers
     def inc(self):
         if self.x < 0:
             self.x -= 1
@@ -164,22 +165,37 @@ class Coords:
 	
 # A representation of a board of size x*y
 class Board:
-    # TODO: use Move instead of coordinates and tokens
     # Initialize an empty board of given size x*y
     def __init__(self, columns, rows, toWin):
-        self.width = columns
-        self.height = rows
-        self.LAST_COLUMN = columns-1
-        self.LAST_ROW = rows-1
+        self.width = max (2, columns) # Min value of 2
+        self.height = max (2, rows) # Min value of 2
+        self.LAST_COLUMN = self.width-1
+        self.LAST_ROW = self.height-1
         self.board = [[None for i in range(self.width)] for j in range(self.height)]
-        self.toWin = toWin # Tokens in a row required for winning
+        self.toWin = max (2, toWin) # Tokens in a row required for winning, min value of 2
         self.playerToken = "O"
         self.enemyToken = "X"
         self.tokenCount = 0
 	
-    # Return the reference of the board
+    # Returns a copy of self
+    def copyBoard(self):
+        newBoard = Board(self.width, self.height, self.toWin)
+        newBoardMatrix = [[None for i in range(self.width)] for j in range(self.height)]
+        for row in range(len(self.board)):
+            for column in range(len(self.board[0])):
+                newBoardMatrix[row][column] = self.board[row][column]
+        newBoard.setBoard(newBoardMatrix)
+        return newBoard
+        
+    # Returns the reference of the internal board
     def getBoard(self):
         return self.board
+    
+    # Changes the internal board reference
+    def setBoard(self, board):
+        self.board = board
+    
+    # Returns True if the board is full, otherwise False
     def isFull(self):
         return self.tokenCount == (self.width * self.height)
     
@@ -194,6 +210,7 @@ class Board:
                     return Move(row, column, token)
         return None
 	
+    # Returns True if the column at given coordinate is full, otherwise False
     def isFullColumn(self, c):
         return self.board[self.LAST_ROW][c] != None
     
@@ -254,19 +271,18 @@ def printAsBoard(board):
         print("")
     print("")
 
+# Plays a token (X) at given column and lets AI make its move
 def playAgainstAI(n):
     if n < board.width:
         if not board.isFullColumn(n):
             if board.dropAndCheck("X", n):
                 return 1
-            if board.dropAndCheck("O", ai.bestMove("O", ai.skillLevel, board)):
+            if board.dropAndCheck("O", ai.bestMove("O", board).y):
                 return 2
     return 0
 
-#app = GUI(None, board, ai)       
-#app.gameloop()
-
-def main():
+# A continuous play mode with user input; drops a token at given column number.
+def play():
         while True:
             c = raw_input("> ")
             try:
@@ -281,20 +297,22 @@ def main():
 
                 if board.isFull():
                     print "Draw!"
+                    break
             except ValueError:
                 pass
-if (len(sys.argv) > 4):
-    d = int(sys.argv[1])
-    w = int(sys.argv[2])
-    h = int(sys.argv[3])
-    toWin = int(sys.argv[4])
-    board = Board(w, h, toWin)
-    ai = cnai(d)
-    printAsBoard(board)
-    try:
-        main()
-    except KeyboardInterrupt:
-        print("\n Interrupted!")
-        sys.exit()   
 
-             
+# Not to be run when imported            
+if __name__ == "__main__":                
+    if (len(sys.argv) > 4):
+        d = int(sys.argv[1])
+        w = int(sys.argv[2])
+        h = int(sys.argv[3])
+        toWin = int(sys.argv[4])
+        board = Board(w, h, toWin)
+        ai = cnai(d)
+        printAsBoard(board)
+        try:
+            play()
+        except KeyboardInterrupt:
+            print("\n Interrupted!")
+            sys.exit()         

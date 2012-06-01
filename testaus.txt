@@ -1,19 +1,19 @@
 Testausdokumentti:
 
-cnai-luokka:
-
-??? testaa, ett‰ heuristiikka on esimerkkitapauksissa ennaltalaskettua vastaava.
-??? testaa, ett‰ voittotilanteeseen p‰‰st‰‰n n siirrolla.
-??? testaa, ett‰ valittu reitti on optimaalinen.
-
-TODO ...
+Luokkien testaus tapahtuu 10 x 15 -laudalla, joka tyhjennet‰‰n joka testin alussa. Voittorivin pituus on nelj‰. Testaukseen k‰ytet‰‰n Pythonin kirjaston unittest-luokkaa.
 
 Board-luokka:
 
-Board-luokan testaus tapahtuu 10 x 15 -laudalla, joka tyhjennet‰‰n joka testin alussa.
+test_fillBoard(): testaa, ett‰ latua t‰yttyy dropToken-funktiota 150 kertaa. Testi onnistuu, mik‰li lauta ei lopussa sis‰ll‰ None-arvoja.
+test_filled_IsWinning(): testaa, ett‰ yhdell‰ pelimerkill‰ t‰ydetty pelilauta sis‰lt‰‰ vain voittorivej‰. Testi onnistuu, mik‰li kaikki koordinaatit laudalla ovat osa voittorivi‰.
+test_isWinning(): testaa, ett‰ nelj‰n pelimerkin pysty-, vaaka- ja vinorivit lasketaan voitoiksi.
 
-test_fillBoard() testaa laudan t‰ytt‰mist‰ kutsumalla dropToken-funktiota 150 kertaa. Testi onnistuu, mik‰li lauta ei lopussa sis‰ll‰ None-arvoja.
 
-test_filled_IsWinning() testaa, ett‰ yhdell‰ pelimerkill‰ t‰ydetty pelilauta sis‰lt‰‰ vain voittorivej‰. Testi onnistuu, mik‰li kaikki koordinaatit laudalla ovat osa voittorivi‰.
+cnai-luokka:
 
-TODO ...
+test_heuristicsCheckCorrect(): testaa, ett‰ heuristiikan arvot vastaavat toisiaan laudan kummallakin laidalla, ts. etenemissuunta ei vaikuta tulokseen.
+test_aiLosesDepthZero(): testaa, ett‰ yksinkertaisin teko‰ly on voitettavissa aggressiivisella taktiikalla.
+test_aiWinsDepthZero(): testaa, ett‰ yksinkertaisin teko‰ly valitsee voittavan siirron.
+test_aiPicksWinning(): testaa, ett‰ teko‰ly valitsee yhden siirron p‰‰ss‰ olevan voittavan vaihtoehdon riippumatta tasostaan. 
+test_aiDeniesPlayer(): testaa, ett‰ teko‰ly est‰‰ pelaajan voiton (kun oma siirto ei voittaisi).
+
